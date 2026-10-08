@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Slice & Slice: Ramen Dash</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #111116;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #1b1b24 0%, #0d0d12 100%);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            cursor: crosshair;
+        }
+        /* UI Overlays */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 13, 18, 0.92);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            padding: 20px;
+            text-align: center;
+        }
+        .screen.hidden {
+            display: none !important;
+        }
+        h1 {
+            font-size: 2.2rem;
+            margin: 0 0 10px 0;
+            background: linear-gradient(45deg, #ff5e62, #ff9966);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 15px rgba(255, 94, 98, 0.3);
+        }
+        p {
+            color: #aaa;
+            font-size: 1rem;
+            margin: 0 0 25px 0;
+            line-height: 1.4;
+        }
+        .btn {
+            background: linear-gradient(135deg, #ff5e62 0%, #ff9966 100%);
+            color: white;
+            border: none;
+            padding: 14px 36px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 94, 98, 0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 10px rgba(255, 94, 98, 0.4);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-box .label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .stat-box .value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ff9966;
+        }
+        /* Top HUD */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+            z-index: 5;
+            box-sizing: border-box;
+        }
+        .hud-item {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+        #combo-badge {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            background: linear-gradient(135deg, #f12711, #f5af19);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(241, 39, 17, 0.4);
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            transform: scale(0.8);
+            pointer-events: none;
+            z-index: 5;
+        }
+        #combo-badge.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- HUD -->
+        <div id="hud">
+            <div class="hud-item" id="score-display">Score: 0</div>
+            <div class="hud-item" id="timer-display">⏱️ 60s</div>
+        </div>
+        <div id="combo-badge">🔥 COMBO x2!</div>
+
+        <!-- Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen">
+            <h1>🍜 RAMEN DASH</h1>
+            <p>Slice flying fresh ingredients with your finger or mouse, then tap completed customer bowls to serve them fast!</p>
+            <button class="btn" id="start-btn">START SHIFT</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameover-screen" class="screen hidden">
+            <h1>SHIFT OVER!</h1>
+            <p>Great job in the kitchen, Chef!</p>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="label">Final Score</div>
+                    <div class="value" id="final-score">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="label">Bowls Served</div>
+                    <div class="value" id="final-bowls">0</div>
+                </div>
+            </div>
+            <button class="btn" id="restart-btn">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        // --- AUDIO SYSTEM (Web Audio API) ---
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'slice') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(120, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'serve') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'drop') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.15);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                }
+            } catch (e) {
+                // Audio safely ignored if blocked
+            }
+        }
+
+        // --- GAME SETUP & CONSTANTS ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        function resize() {
+            const container = document.getElementById('game-container');
+            width = container.clientWidth;
+            height = container.clientHeight;
+            canvas.width = width * window.devicePixelRatio;
+            canvas.height = height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Game States
+        let gameState = 'START'; // START, PLAYING, GAMEOVER
+        let score = 0;
+        let bowlsServedCount = 0;
+        let timeLeft = 60;
+        let gameTimer = null;
+        let spawnTimer = 0;
+        let combo = 0;
+        let comboTimer = null;
+
+        // Ingredient Types
+        const INGREDIENTS = [
+            { name: 'Noodles', emoji: '🍜', color: '#f4d03f', radius: 28 },
+            { name: 'Egg', emoji: '🥚', color: '#f9e79f', radius: 24 },
+            { name: 'Chashu', emoji: '🥩', color: '#b03a2e', radius: 26 },
+            { name: 'Scallions', emoji: '🧅', color: '#27ae60', radius: 22 },
+            { name: 'Nori', emoji: '⬛', color: '#2c3e50', radius: 20 }
+        ];
+
+        // Active Entities
+        let flyingItems = [];
+        let particles = [];
+        let floatingTexts = [];
+        let customerBowls = [];
+
+        // Blade Trail State
+        let touchPoints = [];
+        let isTouching = false;
+
+        // Customer Bowls Configuration
+        const MAX_BOWLS = 3;
+        
+        function initBowls() {
+            customerBowls = [];
+            const spacing = width / (MAX_BOWLS + 1);
+            for (let i = 0; i < MAX_BOWLS; i++) {
+                customerBowls.push({
+                    x: spacing * (i + 1),
+                    y: height - 100,
+                    radius: 42,
+                    order: generateRandomOrder(),
+                    progress: {},
+                    completed: false,
+                    pulseAlpha: 0
+                });
+            }
+        }
+
+        function generateRandomOrder() {
+            // Pick 2 to 3 random ingredients needed for this bowl
+            const count = Math.random() < 0.5 ? 2 : 3;
+            const shuffled = [...INGREDIENTS].sort(() => 0.5 - Math.random());
+            const needed = {};
+            for (let i = 0; i < count; i++) {
+                const ing = shuffled[i];
+                needed[ing.name] = (needed[ing.name] || 0) + 1;
+            }
+            return needed;
+        }
+
+        // --- START & RESTART GAME ---
+        function startGame() {
+            initAudio();
+            score = 0;
+            bowlsServedCount = 0;
+            timeLeft = 60;
+            flyingItems = [];
+            particles = [];
+            floatingTexts = [];
+            combo = 0;
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('gameover-screen').classList.add('hidden');
+            
+            initBowls();
+            gameState = 'PLAYING';
+
+            if (gameTimer) clearInterval(gameTimer);
+            gameTimer = setInterval(() => {
+                if (gameState === 'PLAYING') {
+                    timeLeft--;
+                    document.getElementById('timer-display').innerText = `⏱️ ${timeLeft}s`;
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameState = 'GAMEOVER';
+            clearInterval(gameTimer);
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-bowls').innerText = bowlsServedCount;
+            document.getElementById('gameover-screen').classList.remove('hidden');
+        }
+
+        document.getElementById('start-btn').addEventListener('click', startGame);
+        document.getElementById('restart-btn').addEventListener('click', startGame);
+
+        // --- SPAWNING LOGIC ---
+        function spawnItem() {
+            const template = INGREDIENTS[Math.floor(Math.random() * INGREDIENTS.length)];
+            const x = Math.random() * (width - 120) + 60;
+            const y = height + 40;
+            
+            // Arch physics towards upper middle screen
+            const targetX = width / 2 + (Math.random() - 0.5) * 160;
+            const vx = (targetX - x) / 45;
+            const vy = -(Math.random() * 4 + 11);
+
+            flyingItems.push({
+                x: x,
+                y: y,
+                vx: vx,
+                vy: vy,
+                radius: template.radius,
+                template: template,
+                rotation: Math.random() * Math.PI,
+                vRot: (Math.random() - 0.5) * 0.08,
+                sliced: false
+            });
+        }
+
+        // --- SLICING & COLLISION ---
+        function addTouchPoint(x, y) {
+            touchPoints.push({ x: x, y: y, time: Date.now() });
+            if (touchPoints.length > 8) touchPoints.shift();
+        }
+
+        function checkSliceIntersections() {
+            if (touchPoints.length < 2) return;
+            const p1 = touchPoints[touchPoints.length - 2];
+            const p2 = touchPoints[touchPoints.length - 1];
+
+            let sliceHappened = false;
+
+            flyingItems.forEach(item => {
+                if (item.sliced) return;
+
+                // Line-circle intersection check between p1 and p2 and item center
+                const d = distToSegment({ x: item.x, y: item.y }, p1, p2);
+                if (d < item.radius + 10) {
+                    item.sliced = true;
+                    sliceHappened = true;
+                    playSound('slice');
+
+                    // Increment Combo
+                    combo++;
+                    showComboBadge();
+                    clearTimeout(comboTimer);
+                    comboTimer = setTimeout(() => {
+                        combo = 0;
+                        document.getElementById('combo-badge').classList.remove('show');
+                    }, 1500);
+
+                    // Create particles/splatter
+                    createParticles(item.x, item.y, item.template.color);
+
+                    // Check if any bowl needs this ingredient
+                    let delivered = false;
+                    customerBowls.forEach(bowl => {
+                        if (!bowl.completed && bowl.order[item.template.name]) {
+                            const currentHave = bowl.progress[item.template.name] || 0;
+                            const neededCount = bowl.order[item.template.name];
+                            if (currentHave < neededCount) {
+                                bowl.progress[item.template.name] = currentHave + 1;
+                                delivered = true;
+                                
+                                // Floating text notification
+                                addFloatingText(`+1 ${item.template.emoji}`, item.x, item.y, '#2ecc71');
+
+                                // Check if bowl is now complete
+                                if (isBowlComplete(bowl)) {
+                                    bowl.completed = true;
+                                    bowl.pulseAlpha = 1.0;
+                                    playSound('serve');
+                                    score += 250 * (combo > 1 ? combo : 1);
+                                    bowlsServedCount++;
+                                    addFloatingText('RAMEN READY! 🍜', bowl.x, bowl.y - 40, '#f1c40f');
+                                }
+                            }
+                        }
+                    });
+
+                    if (!delivered) {
+                        score += 10 * (combo > 1 ? combo : 1);
+                    }
+
+                    document.getElementById('score-display').innerText = `Score: ${score}`;
+                }
+            });
+        }
+
+        function isBowlComplete(bowl) {
+            for (let ing in bowl.order) {
+                if ((bowl.progress[ing] || 0) < bowl.order[ing]) return false;
+            }
+            return true;
+        }
+
+        function distToSegment(p, p1, p2) {
+            const l2 = (p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y);
+            if (l2 === 0) return Math.hypot(p.x - p1.x, p.y - p1.y);
+            let t = ((p.x - p1.x) * (p2.x - p1.x) + (p.y - p1.y) * (p2.y - p1.y)) / l2;
+            t = Math.max(0, Math.min(1, t));
+            return Math.hypot(p.x - (p1.x + t * (p2.x - p1.x)), p.y - (p1.y + t * (p2.y - p1.y)));
+        }
+
+        function showComboBadge() {
+            if (combo > 1) {
+                const badge = document.getElementById('combo-badge');
+                badge.innerText = `🔥 COMBO x${combo}!`;
+                badge.classList.add('show');
+            }
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 12; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 6 + 2;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    radius: Math.random() * 4 + 2,
+                    color: color,
+                    alpha: 1.0,
+                    decay: Math.random() * 0.03 + 0.02
+                });
+            }
+        }
+
+        function addFloatingText(text, x, y, color) {
+            floatingTexts.push({
+                text: text,
+                x: x,
+                y: y,
+                vy: -1.5,
+                alpha: 1.0,
+                color: color
+            });
+        }
+
+        // --- INPUT HANDLERS ---
+        canvas.addEventListener('pointerdown', (e) => {
+            if (gameState !== 'PLAYING') return;
+            isTouching = true;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Check if tapping a completed bowl to serve it!
+            customerBowls.forEach((bowl, index) => {
+                if (bowl.completed) {
+                    const dist = Math.hypot(x - bowl.x, y - bowl.y);
+                    if (dist < bowl.radius + 15) {
+                        // Serve! Reset bowl
+                        playSound('serve');
+                        addFloatingText('+500 PTS!', bowl.x, bowl.y - 20, '#ff9966');
+                        score += 500;
+                        document.getElementById('score-display').innerText = `Score: ${score}`;
+                        customerBowls[index] = {
+                            x: bowl.x,
+                            y: bowl.y,
+                            radius: bowl.radius,
+                            order: generateRandomOrder(),
+                            progress: {},
+                            completed: false,
+                            pulseAlpha: 0
+                        };
+                    }
+                }
+            });
+
+            touchPoints = [];
+            addTouchPoint(x, y);
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            if (!isTouching || gameState !== 'PLAYING') return;
+            const rect = canvas.getBoundingClientRect();
+            addTouchPoint(e.clientX - rect.left, e.clientY - rect.top);
+            checkSliceIntersections();
+        });
+
+        window.addEventListener('pointerup', () => {
+            isTouching = false;
+            touchPoints = [];
+        });
+
+        // --- MAIN GAME LOOP ---
+        let lastSpawn = 0;
+        function update(timestamp) {
+            if (gameState === 'PLAYING') {
+                // Spawner
+                if (timestamp - lastSpawn > 900) {
+                    spawnItem();
+                    lastSpawn = timestamp;
+                    if (Math.random() < 0.35) {
+                        setTimeout(() => spawnItem(), 300);
+                    }
+                }
+
+                // Update Flying Items
+                for (let i = flyingItems.length - 1; i >= 0; i--) {
+                    let item = flyingItems[i];
+                    item.x += item.vx;
+                    item.y += item.vy;
+                    item.vy += 0.35; // Gravity
+                    item.rotation += item.vRot;
+
+                    // Remove if fallen off screen
+                    if (item.y > height + 80) {
+                        flyingItems.splice(i, 1);
+                    }
+                }
+
+                // Update Particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    let p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.15;
+                    p.alpha -= p.decay;
+                    if (p.alpha <= 0) particles.splice(i, 1);
+                }
+
+                // Update Floating Texts
+                for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                    let ft = floatingTexts[i];
+                    ft.y += ft.vy;
+                    ft.alpha -= 0.02;
+                    if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+                }
+
+                // Update bowl animations
+                customerBowls.forEach(bowl => {
+                    if (bowl.completed && bowl.pulseAlpha > 0) {
+                        bowl.pulseAlpha -= 0.02;
+                    }
+                });
+            }
+
+            render();
+            requestAnimationFrame(update);
+        }
+
+        // --- RENDER SYSTEM ---
+        function render() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Background Ambient Counter
+            ctx.fillStyle = 'rgba(255,255,255,0.02)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw Customer Bowls Counter Shelf
+            ctx.fillStyle = '#16161e';
+            ctx.fillRect(0, height - 150, width, 150);
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, height - 150);
+            ctx.lineTo(width, height - 150);
+            ctx.stroke();
+
+            // Render Customer Bowls
+            customerBowls.forEach((bowl) => {
+                ctx.save();
+                ctx.translate(bowl.x, bowl.y);
+
+                // Glow if completed & ready to serve
+                if (bowl.completed) {
+                    ctx.shadowColor = '#f1c40f';
+                    ctx.shadowBlur = 15 + Math.sin(Date.now() / 150) * 8;
+                }
+
+                // Bowl outer shadow & rim
+                ctx.fillStyle = '#e5e7eb';
+                ctx.beginPath();
+                ctx.arc(0, 0, bowl.radius, 0, Math.PI);
+                ctx.fill();
+
+                ctx.fillStyle = '#374151';
+                ctx.beginPath();
+                ctx.arc(0, 0, bowl.radius - 6, 0, Math.PI);
+                ctx.fill();
+
+                ctx.restore();
+
+                // Render Order Requirements above bowl
+                renderBowlOrder(bowl);
+            });
+
+            // Render Flying Items
+            flyingItems.forEach(item => {
+                ctx.save();
+                ctx.translate(item.x, item.y);
+                ctx.rotate(item.rotation);
+
+                if (!item.sliced) {
+                    // Draw Ingredient Circle & Emoji
+                    ctx.shadowColor = item.template.color;
+                    ctx.shadowBlur = 12;
+                    ctx.fillStyle = item.template.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, item.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.shadowBlur = 0;
+                    ctx.font = `${item.radius * 1.1}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(item.template.emoji, 0, 2);
+                } else {
+                    // Draw Sliced halves spinning apart
+                    ctx.font = `${item.radius * 0.9}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(item.template.emoji, -12, 0);
+                    ctx.fillText(item.template.emoji, 12, 0);
+                }
+                ctx.restore();
+            });
+
+            // Render Particles
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Render Blade Trail
+            if (touchPoints.length > 1 && isTouching) {
+                ctx.save();
+                ctx.strokeStyle = '#00ffff';
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 15;
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                ctx.beginPath();
+                ctx.moveTo(touchPoints[0].x, touchPoints[0].y);
+                for (let i = 1; i < touchPoints.length; i++) {
+                    ctx.lineTo(touchPoints[i].x, touchPoints[i].y);
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Render Floating Texts
+            floatingTexts.forEach(ft => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, ft.alpha);
+                ctx.font = 'bold 18px sans-serif';
+                ctx.fillStyle = ft.color;
+                ctx.shadowColor = '#000';
+                ctx.shadowBlur = 6;
+                ctx.textAlign = 'center';
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            });
+        }
+
+        function renderBowlOrder(bowl) {
+            const startY = bowl.y - bowl.radius - 35;
+            let totalItems = 0;
+            for (let ing in bowl.order) totalItems += bowl.order[ing];
+
+            let offsetX = -((totalItems * 22) / 2);
+
+            for (let ingName in bowl.order) {
+                const needed = bowl.order[ingName];
+                const have = bowl.progress[ingName] || 0;
+                const template = INGREDIENTS.find(i => i.name === ingName);
+
+                for (let i = 0; i < needed; i++) {
+                    ctx.save();
+                    ctx.font = '16px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    const posX = bowl.x + offsetX + 10;
+                    const posY = startY;
+
+                    // Background pill for requirement
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                    ctx.beginPath();
+                    ctx.arc(posX, posY, 12, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (i < have) {
+                        ctx.globalAlpha = 1.0;
+                    } else {
+                        ctx.globalAlpha = 0.35;
+                    }
+
+                    ctx.fillText(template.emoji, posX, posY + 1);
+                    ctx.restore();
+
+                    offsetX += 24;
+                }
+            }
+
+            if (bowl.completed) {
+                ctx.save();
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillStyle = '#f1c40f';
+                ctx.shadowColor = '#f1c40f';
+                ctx.shadowBlur = 10;
+                ctx.textAlign = 'center';
+                ctx.fillText('👆 TAP TO SERVE!', bowl.x, bowl.y - bowl.radius - 60);
+                ctx.restore();
+            }
+        }
+
+        // Start render loop
+        requestAnimationFrame(update);
+    </script>
+</body>
+</html>
