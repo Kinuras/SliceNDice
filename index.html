@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Katamari Roll</title>
+    <title>Slay the Neon Spire</title>
     <style>
         * {
             box-sizing: border-box;
@@ -17,7 +17,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #090912;
+            background: #080812;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
         }
@@ -27,55 +27,195 @@
             height: 100%;
             max-width: 480px;
             margin: 0 auto;
-            background: linear-gradient(135deg, #131324 0%, #06060d 100%);
+            background: linear-gradient(180deg, #141426 0%, #06060c 100%);
             box-shadow: 0 0 40px rgba(0,0,0,0.9);
             display: flex;
             flex-direction: column;
-        }
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            touch-action: none;
-            cursor: pointer;
+            justify-content: space-between;
+            padding: 15px;
         }
 
-        /* Top HUD */
-        #hud {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
+        /* Top HUD / Player Status */
+        #top-hud {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            pointer-events: none;
-            z-index: 5;
-        }
-        .hud-badge {
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            padding: 8px 14px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.15);
-            font-weight: bold;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
             font-size: 0.95rem;
-            letter-spacing: 1px;
+            font-weight: bold;
+        }
+        .stat-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .hp-text { color: #ff4757; }
+        .block-text { color: #2ed573; }
+        .energy-text { color: #ffa502; }
+
+        /* Battle Arena Section */
+        #arena {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin: 10px 0;
         }
 
-        /* Overlays */
+        #enemy-card {
+            background: rgba(20, 20, 35, 0.9);
+            border: 2px solid #ff4757;
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(255, 71, 87, 0.3);
+            position: relative;
+            transition: transform 0.2s;
+        }
+        #enemy-card.shake {
+            animation: shake 0.3s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .enemy-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #ff6b81;
+            margin-bottom: 6px;
+        }
+        .enemy-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 10px 0;
+            font-size: 0.95rem;
+        }
+        .intent-badge {
+            background: rgba(255, 71, 87, 0.2);
+            border: 1px solid #ff4757;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #ff6b81;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        /* Action Controls (End Turn Button) */
+        #action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .deck-info {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        .btn {
+            background: linear-gradient(135deg, #ffa502 0%, #ff7f50 100%);
+            color: #000;
+            border: none;
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 165, 2, 0.4);
+            transition: transform 0.1s;
+        }
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Hand of Cards */
+        #card-hand {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            height: 150px;
+            perspective: 1000px;
+        }
+        .card {
+            background: linear-gradient(145deg, #1e1e38 0%, #111122 100%);
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            border-radius: 12px;
+            width: 85px;
+            height: 130px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .card:hover, .card:active {
+            transform: translateY(-12px) scale(1.05);
+            border-color: #00ffff;
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.4);
+            z-index: 10;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-cost {
+            background: #ffa502;
+            color: #000;
+            font-weight: bold;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        .card-type {
+            font-size: 0.65rem;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .card-title {
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 4px 0;
+        }
+        .card-desc {
+            font-size: 0.65rem;
+            color: #ccc;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* Overlays (Start / Win / Game Over) */
         .screen {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(6, 6, 13, 0.94);
+            background: rgba(6, 6, 12, 0.95);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 10;
+            z-index: 20;
             padding: 20px;
             text-align: center;
         }
@@ -83,100 +223,103 @@
             display: none !important;
         }
         h1 {
-            font-size: 2.4rem;
+            font-size: 2.2rem;
             margin: 0 0 10px 0;
-            background: linear-gradient(45deg, #ff007f, #7f00ff, #00ffff);
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 25px rgba(255, 0, 127, 0.4);
+            text-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
         }
         p {
             color: #aaa;
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin: 0 0 25px 0;
             line-height: 1.5;
             max-width: 340px;
         }
-        .btn {
-            background: linear-gradient(135deg, #ff007f 0%, #7f00ff 100%);
-            color: #fff;
+        .big-btn {
+            background: linear-gradient(135deg, #00ffff 0%, #0072ff 100%);
+            color: #000;
             border: none;
             padding: 14px 40px;
             font-size: 1.2rem;
             font-weight: bold;
             border-radius: 30px;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(255, 0, 127, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
             transition: transform 0.1s;
         }
-        .btn:active {
+        .big-btn:active {
             transform: scale(0.95);
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            width: 100%;
-            max-width: 300px;
-            margin-bottom: 25px;
-        }
-        .stat-box {
-            background: rgba(255,255,255,0.05);
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .stat-box .label {
-            font-size: 0.8rem;
-            color: #888;
-            margin-bottom: 4px;
-        }
-        .stat-box .value {
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #ff007f;
         }
     </style>
 </head>
 <body>
     <div id="game-container">
-        <!-- Canvas HUD -->
-        <div id="hud">
-            <div class="hud-badge" id="score-display">SCORE: 0</div>
-            <div class="hud-badge" id="size-display">SIZE: 1.0x</div>
-            <div class="hud-badge" id="timer-display">⏱️ 45s</div>
+        <!-- Top HUD -->
+        <div id="top-hud">
+            <div class="stat-group">
+                <span>❤️ HP:</span>
+                <span id="player-hp" class="hp-text">80/80</span>
+            </div>
+            <div class="stat-group">
+                <span>🛡️ Block:</span>
+                <span id="player-block" class="block-text">0</span>
+            </div>
+            <div class="stat-group">
+                <span>⚡ Energy:</span>
+                <span id="player-energy" class="energy-text">3/3</span>
+            </div>
         </div>
 
-        <!-- Canvas -->
-        <canvas id="gameCanvas"></canvas>
+        <!-- Arena -->
+        <div id="arena">
+            <div id="enemy-card">
+                <div class="enemy-name" id="enemy-name">Corrupted Sentinel</div>
+                <div class="enemy-stats">
+                    <div>❤️ HP: <span id="enemy-hp">120/120</span></div>
+                    <div>🛡️ Block: <span id="enemy-block">0</span></div>
+                </div>
+                <div class="intent-badge" id="enemy-intent">Intent: Preparing Attack (12 DMG)</div>
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div id="action-bar">
+            <div class="deck-info">
+                <div>Deck: <span id="deck-count">10</span> | Discard: <span id="discard-count">0</span></div>
+                <div>Floor: <span id="floor-count">1</span> / 3</div>
+            </div>
+            <button class="btn" id="end-turn-btn">END TURN</button>
+        </div>
+
+        <!-- Hand of Cards -->
+        <div id="card-hand"></div>
 
         <!-- Start Screen -->
         <div id="start-screen" class="screen">
-            <h1>KATAMARI ROLL</h1>
-            <p>Drag your finger or mouse anywhere on the screen to roll your sphere. Absorb smaller neon objects to grow bigger before time runs out!</p>
-            <button class="btn" id="start-btn">START ROLLING</button>
+            <h1>NEON SPIRE</h1>
+            <p>Ascend the cyber spire. Play Attack, Block, and Skill cards strategically against rogue malware enemies. Manage your energy wisely!</p>
+            <button class="big-btn" id="start-btn">BEGIN ASCENT</button>
         </div>
 
         <!-- Game Over Screen -->
         <div id="gameover-screen" class="screen hidden">
-            <h1>TIME'S UP!</h1>
-            <p>Look at how much mass you collected!</p>
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <div class="label">Final Score</div>
-                    <div class="value" id="final-score">0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="label">Max Size</div>
-                    <div class="value" id="final-size">1.0x</div>
-                </div>
-            </div>
-            <button class="btn" id="restart-btn">ROLL AGAIN</button>
+            <h1>SYSTEM DELETED</h1>
+            <p>Your cyber run was terminated by the spire malware.</p>
+            <button class="big-btn" id="restart-btn">RETRY ASCENT</button>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victory-screen" class="screen hidden">
+            <h1>SPIRE CONQUERED</h1>
+            <p>You successfully purged the core mainframe! Spire Mastered!</p>
+            <button class="big-btn" id="victory-restart-btn">PLAY AGAIN</button>
         </div>
     </div>
 
     <script>
-        // --- WEB AUDIO API SOUND SYSTEM ---
+        // --- WEB AUDIO API SYSTEM ---
         let audioCtx = null;
         function initAudio() {
             if (!audioCtx) {
@@ -187,7 +330,7 @@
             }
         }
 
-        function playSound(type, pitchMultiplier = 1.0) {
+        function playSound(type) {
             if (!audioCtx) return;
             try {
                 const osc = audioCtx.createOscillator();
@@ -196,394 +339,282 @@
                 gain.connect(audioCtx.destination);
                 const now = audioCtx.currentTime;
 
-                if (type === 'absorb') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(300 * pitchMultiplier, now);
-                    osc.frequency.exponentialRampToValueAtTime(600 * pitchMultiplier, now + 0.08);
-                    gain.gain.setValueAtTime(0.12, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
-                    osc.start(now);
-                    osc.stop(now + 0.08);
-                } else if (type === 'grow') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(261.63, now); // C4
-                    osc.frequency.setValueAtTime(329.63, now + 0.1); // E4
-                    osc.frequency.setValueAtTime(392.00, now + 0.2); // G4
-                    osc.frequency.setValueAtTime(523.25, now + 0.3); // C5
+                if (type === 'attack') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.exponentialRampToValueAtTime(80, now + 0.15);
                     gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
                     osc.start(now);
-                    osc.stop(now + 0.5);
+                    osc.stop(now + 0.15);
+                } else if (type === 'shield') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'buff') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.setValueAtTime(600, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'win') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
                 }
             } catch(e) {}
         }
 
-        // --- GAME SETUP & CONSTANTS ---
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let width, height;
-        function resize() {
-            const container = document.getElementById('game-container');
-            width = container.clientWidth;
-            height = container.clientHeight;
-            canvas.width = width * window.devicePixelRatio;
-            canvas.height = height * window.devicePixelRatio;
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        // Game States
-        let gameState = 'START'; // START, PLAYING, GAMEOVER
-        let score = 0;
-        let timeLeft = 45;
-        let gameTimer = null;
-
-        // Player (Katamari Ball)
-        const player = {
-            x: 0,
-            y: 0,
-            radius: 22,
-            vx: 0,
-            vy: 0,
-            targetX: null,
-            targetY: null
-        };
-
-        let objects = [];
-        let particles = [];
-        let floatingTexts = [];
-
-        // Item templates
-        const ITEM_TYPES = [
-            { name: 'Pin', emoji: '📍', radius: 10, value: 10, tier: 1 },
-            { name: 'Star', emoji: '⭐', radius: 14, value: 25, tier: 1 },
-            { name: 'Cube', emoji: '🧊', radius: 18, value: 40, tier: 2 },
-            { name: 'Donut', emoji: '🍩', radius: 22, value: 70, tier: 2 },
-            { name: 'Gem', emoji: '💎', radius: 28, value: 120, tier: 3 },
-            { name: 'Robot', emoji: '🤖', radius: 36, value: 250, tier: 4 },
-            { name: 'Rocket', emoji: '🚀', radius: 46, value: 500, tier: 5 }
+        // --- GAME STATE & CARD DEFINITIONS ---
+        const MASTER_DECK = [
+            { id: 1, name: 'Strike', cost: 1, type: 'Attack', value: 6, desc: 'Deal 6 damage.' },
+            { id: 2, name: 'Strike', cost: 1, type: 'Attack', value: 6, desc: 'Deal 6 damage.' },
+            { id: 3, name: 'Strike', cost: 1, type: 'Attack', value: 6, desc: 'Deal 6 damage.' },
+            { id: 4, name: 'Strike', cost: 1, type: 'Attack', value: 6, desc: 'Deal 6 damage.' },
+            { id: 5, name: 'Defend', cost: 1, type: 'Skill', value: 5, desc: 'Gain 5 Block.' },
+            { id: 6, name: 'Defend', cost: 1, type: 'Skill', value: 5, desc: 'Gain 5 Block.' },
+            { id: 7, name: 'Defend', cost: 1, type: 'Skill', value: 5, desc: 'Gain 5 Block.' },
+            { id: 8, name: 'Defend', cost: 1, type: 'Skill', value: 5, desc: 'Gain 5 Block.' },
+            { id: 9, name: 'Cyber Surge', cost: 1, type: 'Power', value: 3, desc: 'Deal 9 damage.' },
+            { id: 10, name: 'Patch Code', cost: 1, type: 'Skill', value: 8, desc: 'Gain 8 Block.' }
         ];
 
-        function initGameData() {
-            player.x = width / 2;
-            player.y = height / 2;
-            player.radius = 22;
-            player.vx = 0;
-            player.vy = 0;
-            player.targetX = null;
-            player.targetY = null;
-            score = 0;
-            timeLeft = 45;
-            objects = [];
-            particles = [];
-            floatingTexts = [];
+        const ENEMIES = [
+            { name: 'Corrupted Sentinel', maxHp: 90, hp: 90, block: 0, intentType: 'attack', intentVal: 12 },
+            { name: 'Rogue Firewall', maxHp: 130, hp: 130, block: 0, intentType: 'defend', intentVal: 15 },
+            { name: 'Mainframe Overlord', maxHp: 180, hp: 180, block: 0, intentType: 'attack', intentVal: 20 }
+        ];
 
-            // Spawn initial map items
-            for (let i = 0; i < 45; i++) {
-                spawnRandomObject();
-            }
-        }
+        let player = {
+            hp: 80,
+            maxHp: 80,
+            block: 0,
+            energy: 3,
+            maxEnergy: 3
+        };
 
-        function spawnRandomObject() {
-            // Determine tier based on player size
-            const currentTier = Math.min(5, Math.max(1, Math.floor(player.radius / 18)));
-            const availableTypes = ITEM_TYPES.filter(t => t.tier <= currentTier + 1);
-            const template = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+        let currentFloor = 0;
+        let currentEnemy = null;
+        let deck = [];
+        let hand = [];
+        let discard = [];
 
-            // Keep away from player spawn initially
-            let x, y, dist;
-            do {
-                x = Math.random() * (width - 80) + 40;
-                y = Math.random() * (height - 80) + 40;
-                dist = Math.hypot(x - player.x, y - player.y);
-            } while (dist < 100);
-
-            objects.push({
-                x: x,
-                y: y,
-                radius: template.radius,
-                template: template,
-                rotation: Math.random() * Math.PI * 2,
-                vRot: (Math.random() - 0.5) * 0.05
-            });
-        }
-
-        // --- CONTROLS / INPUT ---
-        let isTouching = false;
-
-        function updateTargetPos(clientX, clientY) {
-            const rect = canvas.getBoundingClientRect();
-            player.targetX = clientX - rect.left;
-            player.targetY = clientY - rect.top;
-        }
-
-        canvas.addEventListener('pointerdown', (e) => {
-            if (gameState !== 'PLAYING') return;
-            initAudio();
-            isTouching = true;
-            updateTargetPos(e.clientX, e.clientY);
-        });
-
-        canvas.addEventListener('pointermove', (e) => {
-            if (!isTouching || gameState !== 'PLAYING') return;
-            updateTargetPos(e.clientX, e.clientY);
-        });
-
-        window.addEventListener('pointerup', () => {
-            isTouching = false;
-            player.targetX = null;
-            player.targetY = null;
-        });
-
-        // --- GAME START & END ---
-        document.getElementById('start-btn').addEventListener('click', startGame);
-        document.getElementById('restart-btn').addEventListener('click', startGame);
-
+        // --- GAMEFLOW FUNCTIONS ---
         function startGame() {
             initAudio();
-            initGameData();
+            player.hp = 80;
+            player.block = 0;
+            currentFloor = 0;
+            loadNextEnemy();
 
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('gameover-screen').classList.add('hidden');
-            gameState = 'PLAYING';
+            document.getElementById('victory-screen').classList.add('hidden');
+        }
 
-            if (gameTimer) clearInterval(gameTimer);
-            gameTimer = setInterval(() => {
-                if (gameState === 'PLAYING') {
-                    timeLeft--;
-                    document.getElementById('timer-display').innerText = `⏱️ ${timeLeft}s`;
-                    if (timeLeft <= 0) {
-                        endGame();
-                    }
+        function loadNextEnemy() {
+            if (currentFloor >= ENEMIES.length) {
+                // Victory!
+                playSound('win');
+                document.getElementById('victory-screen').classList.remove('hidden');
+                return;
+            }
+
+            currentEnemy = JSON.parse(JSON.stringify(ENEMIES[currentFloor]));
+            document.getElementById('floor-count').innerText = (currentFloor + 1);
+            document.getElementById('enemy-name').innerText = currentEnemy.name;
+            
+            // Reset deck
+            deck = JSON.parse(JSON.stringify(MASTER_DECK));
+            shuffle(deck);
+            hand = [];
+            discard = [];
+
+            startPlayerTurn();
+        }
+
+        function startPlayerTurn() {
+            player.energy = player.maxEnergy;
+            player.block = 0; // reset player block at start of turn
+            
+            // Draw 4 cards
+            drawCards(4);
+            updateUI();
+        }
+
+        function drawCards(amount) {
+            for (let i = 0; i < amount; i++) {
+                if (deck.length === 0) {
+                    deck = [...discard];
+                    discard = [];
+                    shuffle(deck);
                 }
-            }, 1000);
+                if (deck.length > 0) {
+                    hand.push(deck.pop());
+                }
+            }
+            renderHand();
         }
 
-        function endGame() {
-            gameState = 'GAMEOVER';
-            clearInterval(gameTimer);
-            document.getElementById('final-score').innerText = score;
-            document.getElementById('final-size').innerText = `${(player.radius / 22).toFixed(1)}x`;
-            document.getElementById('gameover-screen').classList.remove('hidden');
-        }
-
-        // --- EFFECTS ---
-        function createParticles(x, y, color) {
-            for (let i = 0; i < 10; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 5 + 1;
-                particles.push({
-                    x: x,
-                    y: y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    radius: Math.random() * 3 + 1,
-                    color: color,
-                    alpha: 1.0,
-                    decay: 0.05
-                });
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
             }
         }
 
-        function addFloatingText(text, x, y, color) {
-            floatingTexts.push({
-                text: text,
-                x: x,
-                y: y,
-                vy: -1.2,
-                alpha: 1.0,
-                color: color
-            });
-        }
+        // --- CARD PLAYING ---
+        function playCard(index) {
+            const card = hand[index];
+            if (player.energy < card.cost) return; // Not enough energy
 
-        // --- GAME LOOP ---
-        function update() {
-            if (gameState === 'PLAYING') {
-                // Movement physics towards target drag point
-                if (player.targetX !== null && player.targetY !== null) {
-                    const dx = player.targetX - player.x;
-                    const dy = player.targetY - player.y;
-                    const dist = Math.hypot(dx, dy);
+            player.energy -= card.cost;
+            hand.splice(index, 1);
+            discard.push(card);
 
-                    if (dist > 5) {
-                        const speed = 4.2;
-                        player.vx = (dx / dist) * speed;
-                        player.vy = (dy / dist) * speed;
-                    } else {
-                        player.vx *= 0.8;
-                        player.vy *= 0.8;
-                    }
+            // Resolve card effects
+            if (card.type === 'Attack' || card.type === 'Power') {
+                playSound('attack');
+                let dmg = card.value;
+                // Deal to enemy block first
+                if (currentEnemy.block >= dmg) {
+                    currentEnemy.block -= dmg;
                 } else {
-                    player.vx *= 0.9;
-                    player.vy *= 0.9;
+                    dmg -= currentEnemy.block;
+                    currentEnemy.block = 0;
+                    currentEnemy.hp = Math.max(0, currentEnemy.hp - dmg);
                 }
-
-                player.x += player.vx;
-                player.y += player.vy;
-
-                // Screen boundaries clamp
-                const margin = player.radius;
-                player.x = Math.max(margin, Math.min(width - margin, player.x));
-                player.y = Math.max(margin, Math.min(height - margin, player.y));
-
-                // Check collisions with objects on map
-                for (let i = objects.length - 1; i >= 0; i--) {
-                    let obj = objects[i];
-                    obj.rotation += obj.vRot;
-
-                    const dist = Math.hypot(player.x - obj.x, player.y - obj.y);
-                    // If player is bigger than object, absorb it!
-                    if (dist < player.radius + obj.radius * 0.6) {
-                        if (player.radius >= obj.radius * 0.85) {
-                            // Absorbed!
-                            score += obj.template.value;
-                            
-                            // Grow Katamari slightly
-                            const oldRadius = player.radius;
-                            player.radius += obj.radius * 0.08;
-                            
-                            playSound('absorb', Math.max(0.5, 1.3 - (player.radius / 80)));
-                            createParticles(obj.x, obj.y, '#ff007f');
-                            addFloatingText(`+${obj.template.value}`, obj.x, obj.y, '#00ffff');
-
-                            // Check size milestone grow sound
-                            if (Math.floor(player.radius / 15) > Math.floor(oldRadius / 15)) {
-                                playSound('grow');
-                            }
-
-                            document.getElementById('score-display').innerText = `SCORE: ${score}`;
-                            document.getElementById('size-display').innerText = `SIZE: ${(player.radius / 22).toFixed(1)}x`;
-
-                            // Remove and spawn replacement
-                            objects.splice(i, 1);
-                            spawnRandomObject();
-                        }
-                    }
-                }
-
-                // Maintain object count
-                while (objects.length < 45) {
-                    spawnRandomObject();
-                }
-
-                // Update Particles
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    let p = particles[i];
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.alpha -= p.decay;
-                    if (p.alpha <= 0) particles.splice(i, 1);
-                }
-
-                // Update Floating Texts
-                for (let i = floatingTexts.length - 1; i >= 0; i--) {
-                    let ft = floatingTexts[i];
-                    ft.y += ft.vy;
-                    ft.alpha -= 0.02;
-                    if (ft.alpha <= 0) floatingTexts.splice(i, 1);
-                }
+                triggerEnemyShake();
+            } else if (card.type === 'Skill') {
+                playSound('shield');
+                player.block += card.value;
             }
 
-            render();
-            requestAnimationFrame(update);
+            updateUI();
+            renderHand();
+
+            // Check if enemy defeated
+            if (currentEnemy.hp <= 0) {
+                currentFloor++;
+                setTimeout(() => {
+                    loadNextEnemy();
+                }, 600);
+            }
         }
 
-        // --- RENDER SYSTEM ---
-        function render() {
-            ctx.clearRect(0, 0, width, height);
-
-            // Background Grid Lines
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
-            ctx.lineWidth = 1;
-            const gridSize = 40;
-            for (let x = 0; x < width; x += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, height);
-                ctx.stroke();
+        // --- END TURN & ENEMY AI ---
+        document.getElementById('end-turn-btn').addEventListener('click', () => {
+            // Discard remaining hand
+            while (hand.length > 0) {
+                discard.push(hand.pop());
             }
-            for (let y = 0; y < height; y += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(width, y);
-                ctx.stroke();
+            renderHand();
+
+            // Enemy turn
+            executeEnemyTurn();
+        });
+
+        function executeEnemyTurn() {
+            // Reset enemy block
+            currentEnemy.block = 0;
+
+            if (currentEnemy.intentType === 'attack') {
+                playSound('attack');
+                let incomingDmg = currentEnemy.intentVal;
+                if (player.block >= incomingDmg) {
+                    player.block -= incomingDmg;
+                } else {
+                    incomingDmg -= player.block;
+                    player.block = 0;
+                    player.hp = Math.max(0, player.hp - incomingDmg);
+                }
+            } else if (currentEnemy.intentType === 'defend') {
+                playSound('shield');
+                currentEnemy.block += currentEnemy.intentVal;
             }
 
-            // Draw Map Objects
-            objects.forEach(obj => {
-                ctx.save();
-                ctx.translate(obj.x, obj.y);
-                ctx.rotate(obj.rotation);
+            updateUI();
 
-                // Highlight if absorbable by player
-                const canEat = player.radius >= obj.radius * 0.85;
+            if (player.hp <= 0) {
+                document.getElementById('gameover-screen').classList.remove('hidden');
+                return;
+            }
 
-                ctx.font = `${obj.radius * 1.3}px sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
+            // Set next intent
+            const intents = ['attack', 'defend'];
+            currentEnemy.intentType = intents[Math.floor(Math.random() * intents.length)];
+            currentEnemy.intentVal = currentEnemy.intentType === 'attack' ? Math.floor(10 + Math.random() * 10) : Math.floor(10 + Math.random() * 8);
+
+            // Start new turn
+            setTimeout(() => {
+                startPlayerTurn();
+            }, 500);
+        }
+
+        function triggerEnemyShake() {
+            const cardEl = document.getElementById('enemy-card');
+            cardEl.classList.add('shake');
+            setTimeout(() => cardEl.classList.remove('shake'), 300);
+        }
+
+        // --- UI RENDERING ---
+        function updateUI() {
+            document.getElementById('player-hp').innerText = `${player.hp}/${player.maxHp}`;
+            document.getElementById('player-block').innerText = player.block;
+            document.getElementById('player-energy').innerText = `${player.energy}/${player.maxEnergy}`;
+
+            if (currentEnemy) {
+                document.getElementById('enemy-hp').innerText = `${currentEnemy.hp}/${currentEnemy.maxHp}`;
+                document.getElementById('enemy-block').innerText = currentEnemy.block;
                 
-                if (!canEat) {
-                    ctx.globalAlpha = 0.5; // too big to eat yet
+                let intentStr = '';
+                if (currentEnemy.intentType === 'attack') {
+                    intentStr = `Intent: Attack (${currentEnemy.intentVal} DMG)`;
+                } else {
+                    intentStr = `Intent: Defend (+${currentEnemy.intentVal} Block)`;
                 }
+                document.getElementById('enemy-intent').innerText = intentStr;
+            }
 
-                ctx.fillText(obj.template.emoji, 0, 0);
-                ctx.restore();
-            });
+            document.getElementById('deck-count').innerText = deck.length;
+            document.getElementById('discard-count').innerText = discard.length;
+        }
 
-            // Draw Player Katamari Ball
-            ctx.save();
-            ctx.translate(player.x, player.y);
+        function renderHand() {
+            const handContainer = document.getElementById('card-hand');
+            handContainer.innerHTML = '';
 
-            // Outer Neon Glow
-            ctx.shadowColor = '#ff007f';
-            ctx.shadowBlur = 20;
-            ctx.fillStyle = '#1a0033';
-            ctx.strokeStyle = '#ff007f';
-            ctx.lineWidth = 4;
-
-            ctx.beginPath();
-            ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            // Inner spinning pattern / core
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#00ffff';
-            ctx.beginPath();
-            ctx.arc(0, 0, player.radius * 0.4, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.restore();
-
-            // Draw Particles
-            particles.forEach(p => {
-                ctx.save();
-                ctx.globalAlpha = Math.max(0, p.alpha);
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            });
-
-            // Draw Floating Texts
-            floatingTexts.forEach(ft => {
-                ctx.save();
-                ctx.globalAlpha = Math.max(0, ft.alpha);
-                ctx.font = 'bold 16px sans-serif';
-                ctx.fillStyle = ft.color;
-                ctx.shadowColor = ft.color;
-                ctx.shadowBlur = 8;
-                ctx.textAlign = 'center';
-                ctx.fillText(ft.text, ft.x, ft.y);
-                ctx.restore();
+            hand.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-cost">${card.cost}</div>
+                        <div class="card-type">${card.type}</div>
+                    </div>
+                    <div class="card-title">${card.name}</div>
+                    <div class="card-desc">${card.desc}</div>
+                `;
+                cardEl.addEventListener('click', () => playCard(index));
+                handContainer.appendChild(cardEl);
             });
         }
 
-        // Start render loop
-        requestAnimationFrame(update);
+        // Event Listeners for Screens
+        document.getElementById('start-btn').addEventListener('click', startGame);
+        document.getElementById('restart-btn').addEventListener('click', startGame);
+        document.getElementById('victory-restart-btn').addEventListener('click', startGame);
     </script>
 </body>
 </html>
