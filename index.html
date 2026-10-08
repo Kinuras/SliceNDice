@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cyber Slash Runner</title>
+    <title>Katamari Roll</title>
     <style>
         * {
             box-sizing: border-box;
@@ -17,7 +17,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #080811;
+            background: #090912;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
         }
@@ -27,7 +27,7 @@
             height: 100%;
             max-width: 480px;
             margin: 0 auto;
-            background: linear-gradient(180deg, #100f24 0%, #05050c 100%);
+            background: linear-gradient(135deg, #131324 0%, #06060d 100%);
             box-shadow: 0 0 40px rgba(0,0,0,0.9);
             display: flex;
             flex-direction: column;
@@ -35,61 +35,32 @@
         canvas {
             display: block;
             width: 100%;
-            flex: 1;
+            height: 100%;
             touch-action: none;
+            cursor: pointer;
         }
-        /* Touch Control Deck */
-        #control-deck {
-            height: 140px;
-            background: rgba(10, 10, 20, 0.95);
-            border-top: 2px solid rgba(0, 255, 255, 0.2);
+
+        /* Top HUD */
+        #hud {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            pointer-events: none;
             z-index: 5;
         }
-        .control-btn {
-            flex: 1;
-            max-width: 180px;
-            height: 90px;
+        .hud-badge {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            padding: 8px 14px;
             border-radius: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            font-size: 1.4rem;
+            border: 1px solid rgba(255,255,255,0.15);
             font-weight: bold;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-            transition: transform 0.05s, box-shadow 0.05s, background 0.1s;
-        }
-        .control-btn:active {
-            transform: scale(0.95);
-        }
-        #jump-btn {
-            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
-            box-shadow: 0 6px 20px rgba(0, 198, 255, 0.4);
-            margin-right: 15px;
-        }
-        #jump-btn:active {
-            box-shadow: 0 2px 10px rgba(0, 198, 255, 0.4);
-        }
-        #slice-btn {
-            background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);
-            box-shadow: 0 6px 20px rgba(241, 39, 17, 0.4);
-            margin-left: 15px;
-        }
-        #slice-btn:active {
-            box-shadow: 0 2px 10px rgba(241, 39, 17, 0.4);
-        }
-        .control-btn span {
-            font-size: 0.85rem;
-            font-weight: normal;
-            opacity: 0.8;
-            margin-top: 4px;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
         }
 
         /* Overlays */
@@ -99,7 +70,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(5, 5, 12, 0.94);
+            background: rgba(6, 6, 13, 0.94);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -114,10 +85,10 @@
         h1 {
             font-size: 2.4rem;
             margin: 0 0 10px 0;
-            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            background: linear-gradient(45deg, #ff007f, #7f00ff, #00ffff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
+            text-shadow: 0 0 25px rgba(255, 0, 127, 0.4);
         }
         p {
             color: #aaa;
@@ -127,15 +98,15 @@
             max-width: 340px;
         }
         .btn {
-            background: linear-gradient(135deg, #00ffff 0%, #0072ff 100%);
-            color: #000;
+            background: linear-gradient(135deg, #ff007f 0%, #7f00ff 100%);
+            color: #fff;
             border: none;
             padding: 14px 40px;
             font-size: 1.2rem;
             font-weight: bold;
             border-radius: 30px;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.5);
             transition: transform 0.1s;
         }
         .btn:active {
@@ -163,30 +134,7 @@
         .stat-box .value {
             font-size: 1.4rem;
             font-weight: bold;
-            color: #00ffff;
-        }
-
-        /* HUD Overlay on Canvas */
-        #hud {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            pointer-events: none;
-            z-index: 5;
-        }
-        .hud-badge {
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.15);
-            font-weight: bold;
-            font-size: 1rem;
-            letter-spacing: 1px;
+            color: #ff007f;
         }
     </style>
 </head>
@@ -195,46 +143,35 @@
         <!-- Canvas HUD -->
         <div id="hud">
             <div class="hud-badge" id="score-display">SCORE: 0</div>
-            <div class="hud-badge" id="speed-display">⚡ 1.0X</div>
+            <div class="hud-badge" id="size-display">SIZE: 1.0x</div>
+            <div class="hud-badge" id="timer-display">⏱️ 45s</div>
         </div>
 
         <!-- Canvas -->
         <canvas id="gameCanvas"></canvas>
 
-        <!-- Touch Controls Deck -->
-        <div id="control-deck">
-            <button class="control-btn" id="jump-btn">
-                ▲ JUMP
-                <span>Avoid Ground Hazards</span>
-            </button>
-            <button class="control-btn" id="slice-btn">
-                ⚔️ SLICE
-                <span>Destroy Drones & Shards</span>
-            </button>
-        </div>
-
         <!-- Start Screen -->
         <div id="start-screen" class="screen">
-            <h1>CYBER SLASH</h1>
-            <p>Sprint across the neon skyline. Use <b>JUMP</b> to clear ground hazards and pits, and <b>SLICE</b> to obliterate flying security drones and data-shards!</p>
-            <button class="btn" id="start-btn">INITIALIZE RUN</button>
+            <h1>KATAMARI ROLL</h1>
+            <p>Drag your finger or mouse anywhere on the screen to roll your sphere. Absorb smaller neon objects to grow bigger before time runs out!</p>
+            <button class="btn" id="start-btn">START ROLLING</button>
         </div>
 
         <!-- Game Over Screen -->
         <div id="gameover-screen" class="screen hidden">
-            <h1>SYSTEM CRASH</h1>
-            <p>Your neural connection was severed.</p>
+            <h1>TIME'S UP!</h1>
+            <p>Look at how much mass you collected!</p>
             <div class="stats-grid">
                 <div class="stat-box">
                     <div class="label">Final Score</div>
                     <div class="value" id="final-score">0</div>
                 </div>
                 <div class="stat-box">
-                    <div class="label">Distance Run</div>
-                    <div class="value" id="final-dist">0m</div>
+                    <div class="label">Max Size</div>
+                    <div class="value" id="final-size">1.0x</div>
                 </div>
             </div>
-            <button class="btn" id="restart-btn">REBOOT SYSTEM</button>
+            <button class="btn" id="restart-btn">ROLL AGAIN</button>
         </div>
     </div>
 
@@ -250,7 +187,7 @@
             }
         }
 
-        function playSound(type) {
+        function playSound(type, pitchMultiplier = 1.0) {
             if (!audioCtx) return;
             try {
                 const osc = audioCtx.createOscillator();
@@ -259,52 +196,37 @@
                 gain.connect(audioCtx.destination);
                 const now = audioCtx.currentTime;
 
-                if (type === 'jump') {
+                if (type === 'absorb') {
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(150, now);
-                    osc.frequency.exponentialRampToValueAtTime(450, now + 0.15);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.frequency.setValueAtTime(300 * pitchMultiplier, now);
+                    osc.frequency.exponentialRampToValueAtTime(600 * pitchMultiplier, now + 0.08);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
                     osc.start(now);
-                    osc.stop(now + 0.15);
-                } else if (type === 'slice') {
+                    osc.stop(now + 0.08);
+                } else if (type === 'grow') {
                     osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.12);
+                    osc.frequency.setValueAtTime(261.63, now); // C4
+                    osc.frequency.setValueAtTime(329.63, now + 0.1); // E4
+                    osc.frequency.setValueAtTime(392.00, now + 0.2); // G4
+                    osc.frequency.setValueAtTime(523.25, now + 0.3); // C5
                     gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
                     osc.start(now);
-                    osc.stop(now + 0.12);
-                } else if (type === 'crash') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(120, now);
-                    osc.frequency.linearRampToValueAtTime(40, now + 0.3);
-                    gain.gain.setValueAtTime(0.3, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
-                    osc.start(now);
-                    osc.stop(now + 0.3);
-                } else if (type === 'score') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(587.33, now); // D5
-                    osc.frequency.setValueAtTime(880, now + 0.08); // A5
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-                    osc.start(now);
-                    osc.stop(now + 0.2);
+                    osc.stop(now + 0.5);
                 }
             } catch(e) {}
         }
 
-        // --- GAME ENGINE & SETUP ---
+        // --- GAME SETUP & CONSTANTS ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
         let width, height;
         function resize() {
             const container = document.getElementById('game-container');
-            const deck = document.getElementById('control-deck');
             width = container.clientWidth;
-            height = container.clientHeight - deck.offsetHeight;
+            height = container.clientHeight;
             canvas.width = width * window.devicePixelRatio;
             canvas.height = height * window.devicePixelRatio;
             ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -315,194 +237,152 @@
         // Game States
         let gameState = 'START'; // START, PLAYING, GAMEOVER
         let score = 0;
-        let distance = 0;
-        let gameSpeed = 6;
-        let baseSpeed = 6;
+        let timeLeft = 45;
+        let gameTimer = null;
 
-        // Player Object
+        // Player (Katamari Ball)
         const player = {
-            x: 70,
+            x: 0,
             y: 0,
-            width: 36,
-            height: 52,
+            radius: 22,
+            vx: 0,
             vy: 0,
-            isJumping: false,
-            isSlashing: false,
-            slashTimer: 0,
-            groundY: 0
+            targetX: null,
+            targetY: null
         };
 
-        let obstacles = [];
+        let objects = [];
         let particles = [];
         let floatingTexts = [];
-        let buildings = []; // Background skyline
-        let stars = [];
 
-        function initEnvironment() {
-            player.groundY = height - 70;
-            player.y = player.groundY - player.height;
+        // Item templates
+        const ITEM_TYPES = [
+            { name: 'Pin', emoji: '📍', radius: 10, value: 10, tier: 1 },
+            { name: 'Star', emoji: '⭐', radius: 14, value: 25, tier: 1 },
+            { name: 'Cube', emoji: '🧊', radius: 18, value: 40, tier: 2 },
+            { name: 'Donut', emoji: '🍩', radius: 22, value: 70, tier: 2 },
+            { name: 'Gem', emoji: '💎', radius: 28, value: 120, tier: 3 },
+            { name: 'Robot', emoji: '🤖', radius: 36, value: 250, tier: 4 },
+            { name: 'Rocket', emoji: '🚀', radius: 46, value: 500, tier: 5 }
+        ];
 
-            buildings = [];
-            for (let i = 0; i < 6; i++) {
-                buildings.push({
-                    x: i * 120,
-                    w: 90 + Math.random() * 40,
-                    h: 150 + Math.random() * 180,
-                    color: `hsl(${220 + Math.random() * 40}, 30%, ${10 + Math.random() * 8}%)`
-                });
-            }
+        function initGameData() {
+            player.x = width / 2;
+            player.y = height / 2;
+            player.radius = 22;
+            player.vx = 0;
+            player.vy = 0;
+            player.targetX = null;
+            player.targetY = null;
+            score = 0;
+            timeLeft = 45;
+            objects = [];
+            particles = [];
+            floatingTexts = [];
 
-            stars = [];
-            for (let i = 0; i < 30; i++) {
-                stars.push({
-                    x: Math.random() * width,
-                    y: Math.random() * (height - 100),
-                    size: Math.random() * 2 + 1,
-                    alpha: Math.random()
-                });
+            // Spawn initial map items
+            for (let i = 0; i < 45; i++) {
+                spawnRandomObject();
             }
         }
 
-        // --- GAME CONTROLS ---
-        function handleJump() {
+        function spawnRandomObject() {
+            // Determine tier based on player size
+            const currentTier = Math.min(5, Math.max(1, Math.floor(player.radius / 18)));
+            const availableTypes = ITEM_TYPES.filter(t => t.tier <= currentTier + 1);
+            const template = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+
+            // Keep away from player spawn initially
+            let x, y, dist;
+            do {
+                x = Math.random() * (width - 80) + 40;
+                y = Math.random() * (height - 80) + 40;
+                dist = Math.hypot(x - player.x, y - player.y);
+            } while (dist < 100);
+
+            objects.push({
+                x: x,
+                y: y,
+                radius: template.radius,
+                template: template,
+                rotation: Math.random() * Math.PI * 2,
+                vRot: (Math.random() - 0.5) * 0.05
+            });
+        }
+
+        // --- CONTROLS / INPUT ---
+        let isTouching = false;
+
+        function updateTargetPos(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            player.targetX = clientX - rect.left;
+            player.targetY = clientY - rect.top;
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
             if (gameState !== 'PLAYING') return;
             initAudio();
-            if (!player.isJumping) {
-                player.vy = -12.5;
-                player.isJumping = true;
-                playSound('jump');
-                createJumpParticles();
-            }
-        }
-
-        function handleSlice() {
-            if (gameState !== 'PLAYING') return;
-            initAudio();
-            if (!player.isSlashing) {
-                player.isSlashing = true;
-                player.slashTimer = 18; // frames of blade active
-                playSound('slice');
-
-                // Check collisions with active obstacles for slicing!
-                obstacles.forEach(obs => {
-                    if (!obs.sliced && obs.type !== 'pit') {
-                        const dist = Math.hypot((player.x + player.width/2) - (obs.x + obs.width/2), (player.y + player.height/2) - (obs.y + obs.height/2));
-                        if (dist < 85) {
-                            obs.sliced = true;
-                            score += obs.type === 'drone' ? 300 : 150;
-                            playSound('score');
-                            createExplosion(obs.x + obs.width/2, obs.y + obs.height/2, '#00ffff');
-                            addFloatingText(`+${obs.type === 'drone' ? 300 : 150}`, obs.x, obs.y, '#00ffff');
-                        }
-                    }
-                });
-            }
-        }
-
-        // Event Listeners for Touch/Mouse Buttons
-        const jumpBtn = document.getElementById('jump-btn');
-        const sliceBtn = document.getElementById('slice-btn');
-
-        jumpBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); handleJump(); });
-        sliceBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); handleSlice(); });
-
-        // Keyboard Support (Space/ArrowUp for Jump, KeyX/KeyF for Slice)
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' || e.code === 'ArrowUp') {
-                e.preventDefault();
-                handleJump();
-            } else if (e.code === 'KeyX' || e.code === 'KeyF' || e.code === 'KeyS') {
-                e.preventDefault();
-                handleSlice();
-            }
+            isTouching = true;
+            updateTargetPos(e.clientX, e.clientY);
         });
 
+        canvas.addEventListener('pointermove', (e) => {
+            if (!isTouching || gameState !== 'PLAYING') return;
+            updateTargetPos(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('pointerup', () => {
+            isTouching = false;
+            player.targetX = null;
+            player.targetY = null;
+        });
+
+        // --- GAME START & END ---
         document.getElementById('start-btn').addEventListener('click', startGame);
         document.getElementById('restart-btn').addEventListener('click', startGame);
 
         function startGame() {
             initAudio();
-            score = 0;
-            distance = 0;
-            gameSpeed = 6;
-            obstacles = [];
-            particles = [];
-            floatingTexts = [];
-            initEnvironment();
+            initGameData();
 
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('gameover-screen').classList.add('hidden');
             gameState = 'PLAYING';
+
+            if (gameTimer) clearInterval(gameTimer);
+            gameTimer = setInterval(() => {
+                if (gameState === 'PLAYING') {
+                    timeLeft--;
+                    document.getElementById('timer-display').innerText = `⏱️ ${timeLeft}s`;
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                }
+            }, 1000);
         }
 
         function endGame() {
             gameState = 'GAMEOVER';
-            playSound('crash');
+            clearInterval(gameTimer);
             document.getElementById('final-score').innerText = score;
-            document.getElementById('final-dist').innerText = `${Math.floor(distance)}m`;
+            document.getElementById('final-size').innerText = `${(player.radius / 22).toFixed(1)}x`;
             document.getElementById('gameover-screen').classList.remove('hidden');
         }
 
-        // --- SPAWNER ---
-        let spawnTimer = 0;
-        function spawnObstacle() {
-            const types = ['barrier', 'drone', 'shard'];
-            const chosen = types[Math.floor(Math.random() * types.length)];
-            
-            let obs = {
-                x: width + 50,
-                y: player.groundY - 45,
-                width: 40,
-                height: 45,
-                type: chosen,
-                sliced: false
-            };
-
-            if (chosen === 'drone') {
-                obs.y = player.groundY - 110; // floating high, must slice
-                obs.width = 46;
-                obs.height = 36;
-            } else if (chosen === 'shard') {
-                obs.y = player.groundY - 80; // floating collectible shard
-                obs.width = 30;
-                obs.height = 30;
-            } else {
-                // barrier on floor, must jump
-                obs.height = 50;
-            }
-
-            obstacles.push(obs);
-        }
-
-        // --- PARTICLES & EFFECTS ---
-        function createJumpParticles() {
-            for (let i = 0; i < 8; i++) {
-                particles.push({
-                    x: player.x + player.width/2,
-                    y: player.groundY,
-                    vx: (Math.random() - 0.5) * 4,
-                    vy: Math.random() * -3,
-                    radius: Math.random() * 3 + 1,
-                    color: '#00ffff',
-                    alpha: 1.0,
-                    decay: 0.05
-                });
-            }
-        }
-
-        function createExplosion(x, y, color) {
-            for (let i = 0; i < 15; i++) {
+        // --- EFFECTS ---
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 10; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 7 + 2;
+                const speed = Math.random() * 5 + 1;
                 particles.push({
                     x: x,
                     y: y,
                     vx: Math.cos(angle) * speed,
                     vy: Math.sin(angle) * speed,
-                    radius: Math.random() * 4 + 2,
+                    radius: Math.random() * 3 + 1,
                     color: color,
                     alpha: 1.0,
-                    decay: 0.04
+                    decay: 0.05
                 });
             }
         }
@@ -519,84 +399,74 @@
         }
 
         // --- GAME LOOP ---
-        let lastTime = 0;
-        function update(timestamp) {
+        function update() {
             if (gameState === 'PLAYING') {
-                // Progression
-                distance += gameSpeed * 0.05;
-                score += Math.floor(gameSpeed * 0.1);
-                gameSpeed = baseSpeed + Math.floor(distance / 120) * 0.6;
+                // Movement physics towards target drag point
+                if (player.targetX !== null && player.targetY !== null) {
+                    const dx = player.targetX - player.x;
+                    const dy = player.targetY - player.y;
+                    const dist = Math.hypot(dx, dy);
 
-                document.getElementById('score-display').innerText = `SCORE: ${score}`;
-                document.getElementById('speed-display').innerText = `⚡ ${(gameSpeed / baseSpeed).toFixed(1)}X`;
-
-                // Spawning
-                spawnTimer += gameSpeed;
-                if (spawnTimer > 110) {
-                    spawnObstacle();
-                    spawnTimer = 0;
+                    if (dist > 5) {
+                        const speed = 4.2;
+                        player.vx = (dx / dist) * speed;
+                        player.vy = (dy / dist) * speed;
+                    } else {
+                        player.vx *= 0.8;
+                        player.vy *= 0.8;
+                    }
+                } else {
+                    player.vx *= 0.9;
+                    player.vy *= 0.9;
                 }
 
-                // Player Physics (Gravity & Jump)
-                player.vy += 0.65;
+                player.x += player.vx;
                 player.y += player.vy;
-                if (player.y >= player.groundY - player.height) {
-                    player.y = player.groundY - player.height;
-                    player.vy = 0;
-                    player.isJumping = false;
-                }
 
-                // Slash Timer
-                if (player.isSlashing) {
-                    player.slashTimer--;
-                    if (player.slashTimer <= 0) player.isSlashing = false;
-                }
+                // Screen boundaries clamp
+                const margin = player.radius;
+                player.x = Math.max(margin, Math.min(width - margin, player.x));
+                player.y = Math.max(margin, Math.min(height - margin, player.y));
 
-                // Update Obstacles
-                for (let i = obstacles.length - 1; i >= 0; i--) {
-                    let obs = obstacles[i];
-                    obs.x -= gameSpeed;
+                // Check collisions with objects on map
+                for (let i = objects.length - 1; i >= 0; i--) {
+                    let obj = objects[i];
+                    obj.rotation += obj.vRot;
 
-                    // Check Shard pickup
-                    if (!obs.sliced && obs.type === 'shard') {
-                        const dist = Math.hypot((player.x + player.width/2) - (obs.x + obs.width/2), (player.y + player.height/2) - (obs.y + obs.height/2));
-                        if (dist < 40) {
-                            obs.sliced = true;
-                            score += 500;
-                            playSound('score');
-                            createExplosion(obs.x, obs.y, '#ff00ff');
-                            addFloatingText('+500 SHARD!', obs.x, obs.y, '#ff00ff');
+                    const dist = Math.hypot(player.x - obj.x, player.y - obj.y);
+                    // If player is bigger than object, absorb it!
+                    if (dist < player.radius + obj.radius * 0.6) {
+                        if (player.radius >= obj.radius * 0.85) {
+                            // Absorbed!
+                            score += obj.template.value;
+                            
+                            // Grow Katamari slightly
+                            const oldRadius = player.radius;
+                            player.radius += obj.radius * 0.08;
+                            
+                            playSound('absorb', Math.max(0.5, 1.3 - (player.radius / 80)));
+                            createParticles(obj.x, obj.y, '#ff007f');
+                            addFloatingText(`+${obj.template.value}`, obj.x, obj.y, '#00ffff');
+
+                            // Check size milestone grow sound
+                            if (Math.floor(player.radius / 15) > Math.floor(oldRadius / 15)) {
+                                playSound('grow');
+                            }
+
+                            document.getElementById('score-display').innerText = `SCORE: ${score}`;
+                            document.getElementById('size-display').innerText = `SIZE: ${(player.radius / 22).toFixed(1)}x`;
+
+                            // Remove and spawn replacement
+                            objects.splice(i, 1);
+                            spawnRandomObject();
                         }
                     }
-
-                    // Collision detection with obstacles if not sliced
-                    if (!obs.sliced && obs.type !== 'shard') {
-                        // AABB Collision with forgiveness margin
-                        if (
-                            player.x + 8 < obs.x + obs.width - 8 &&
-                            player.x + player.width - 8 > obs.x + 8 &&
-                            player.y + 8 < obs.y + obs.height - 8 &&
-                            player.y + player.height - 4 > obs.y + 8
-                        ) {
-                            endGame();
-                        }
-                    }
-
-                    // Remove off-screen obstacles
-                    if (obs.x < -60) {
-                        obstacles.splice(i, 1);
-                    }
                 }
 
-                // Update Background Buildings
-                buildings.forEach(b => {
-                    b.x -= gameSpeed * 0.35;
-                    if (b.x + b.w < 0) {
-                        b.x = width + Math.random() * 50;
-                        b.w = 90 + Math.random() * 40;
-                        b.h = 150 + Math.random() * 180;
-                    }
-                });
+                // Maintain object count
+                while (objects.length < 45) {
+                    spawnRandomObject();
+                }
 
                 // Update Particles
                 for (let i = particles.length - 1; i >= 0; i--) {
@@ -624,121 +494,67 @@
         function render() {
             ctx.clearRect(0, 0, width, height);
 
-            // Draw Stars
-            ctx.fillStyle = '#ffffff';
-            stars.forEach(s => {
-                ctx.globalAlpha = s.alpha;
-                ctx.fillRect(s.x, s.y, s.size, s.size);
-            });
-            ctx.globalAlpha = 1.0;
-
-            // Draw Skyline Buildings
-            buildings.forEach(b => {
-                ctx.fillStyle = b.color;
-                ctx.fillRect(b.x, height - 70 - b.h, b.w, b.h);
-                // Windows glow
-                ctx.fillStyle = 'rgba(0, 255, 255, 0.15)';
-                for (let wx = b.x + 10; wx < b.x + b.w - 10; wx += 16) {
-                    for (let wy = height - 70 - b.h + 20; wy < height - 90; wy += 25) {
-                        ctx.fillRect(wx, wy, 8, 12);
-                    }
-                }
-            });
-
-            // Draw Neon Ground Floor
-            ctx.fillStyle = '#121224';
-            ctx.fillRect(0, player.groundY, width, height - player.groundY);
-            
-            ctx.strokeStyle = '#00ffff';
-            ctx.shadowColor = '#00ffff';
-            ctx.shadowBlur = 12;
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(0, player.groundY);
-            ctx.lineTo(width, player.groundY);
-            ctx.stroke();
-            ctx.shadowBlur = 0; // reset
-
-            // Draw Ground Grid Perspective Lines
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)';
+            // Background Grid Lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
             ctx.lineWidth = 1;
-            const gridOffset = (distance * 15) % 40;
-            for (let gx = -gridOffset; gx < width; gx += 40) {
+            const gridSize = 40;
+            for (let x = 0; x < width; x += gridSize) {
                 ctx.beginPath();
-                ctx.moveTo(gx, player.groundY);
-                ctx.lineTo(gx - 40, height);
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
                 ctx.stroke();
             }
 
-            // Draw Obstacles
-            obstacles.forEach(obs => {
-                if (obs.sliced) return;
-
+            // Draw Map Objects
+            objects.forEach(obj => {
                 ctx.save();
-                if (obs.type === 'drone') {
-                    // Security Drone
-                    ctx.shadowColor = '#ff0055';
-                    ctx.shadowBlur = 15;
-                    ctx.fillStyle = '#ff0055';
-                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                ctx.translate(obj.x, obj.y);
+                ctx.rotate(obj.rotation);
 
-                    // Rotor glow
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(obs.x + 4, obs.y + 4, obs.width - 8, 6);
-                } else if (obs.type === 'shard') {
-                    // Data Shard Crystal
-                    ctx.shadowColor = '#ff00ff';
-                    ctx.shadowBlur = 15;
-                    ctx.fillStyle = '#ff00ff';
-                    ctx.beginPath();
-                    ctx.arc(obs.x + obs.width/2, obs.y + obs.height/2, obs.width/2, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = '14px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('💎', obs.x + obs.width/2, obs.y + obs.height/2);
-                } else {
-                    // Floor Cyber Barrier
-                    ctx.shadowColor = '#00ffff';
-                    ctx.shadowBlur = 12;
-                    ctx.fillStyle = '#0a0a1a';
-                    ctx.strokeStyle = '#00ffff';
-                    ctx.lineWidth = 2;
-                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-                    ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+                // Highlight if absorbable by player
+                const canEat = player.radius >= obj.radius * 0.85;
 
-                    // Inner laser hazard lines
-                    ctx.fillStyle = '#00ffff';
-                    ctx.fillRect(obs.x + 6, obs.y + 10, obs.width - 12, 4);
-                    ctx.fillRect(obs.x + 6, obs.y + 26, obs.width - 12, 4);
+                ctx.font = `${obj.radius * 1.3}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                if (!canEat) {
+                    ctx.globalAlpha = 0.5; // too big to eat yet
                 }
+
+                ctx.fillText(obj.template.emoji, 0, 0);
                 ctx.restore();
             });
 
-            // Draw Player (Cyber Runner)
+            // Draw Player Katamari Ball
             ctx.save();
-            ctx.shadowColor = '#00ffff';
-            ctx.shadowBlur = 15;
-            
-            // Body
+            ctx.translate(player.x, player.y);
+
+            // Outer Neon Glow
+            ctx.shadowColor = '#ff007f';
+            ctx.shadowBlur = 20;
+            ctx.fillStyle = '#1a0033';
+            ctx.strokeStyle = '#ff007f';
+            ctx.lineWidth = 4;
+
+            ctx.beginPath();
+            ctx.arc(0, 0, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Inner spinning pattern / core
+            ctx.shadowBlur = 0;
             ctx.fillStyle = '#00ffff';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.beginPath();
+            ctx.arc(0, 0, player.radius * 0.4, 0, Math.PI * 2);
+            ctx.fill();
 
-            // Visor
-            ctx.fillStyle = '#ff00ff';
-            ctx.fillRect(player.x + 16, player.y + 10, 16, 8);
-
-            // Active Sword Arc if Slashing
-            if (player.isSlashing) {
-                ctx.strokeStyle = '#ffffff';
-                ctx.shadowColor = '#ffffff';
-                ctx.shadowBlur = 20;
-                ctx.lineWidth = 6;
-                ctx.beginPath();
-                ctx.arc(player.x + player.width + 10, player.y + player.height/2, 35, -Math.PI/2, Math.PI/2);
-                ctx.stroke();
-            }
             ctx.restore();
 
             // Draw Particles
@@ -756,10 +572,10 @@
             floatingTexts.forEach(ft => {
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, ft.alpha);
-                ctx.font = 'bold 18px sans-serif';
+                ctx.font = 'bold 16px sans-serif';
                 ctx.fillStyle = ft.color;
                 ctx.shadowColor = ft.color;
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 8;
                 ctx.textAlign = 'center';
                 ctx.fillText(ft.text, ft.x, ft.y);
                 ctx.restore();
